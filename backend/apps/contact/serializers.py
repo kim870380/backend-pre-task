@@ -50,8 +50,9 @@ class ContactCreateUpdateSerializer(serializers.ModelSerializer):
     phone validation: 전화번호 형식 검사
     """
     def validate_phone(self, value):
-        if value and not value.isdigit():
-            raise serializers.ValidationError("전화번호는 숫자만 포함할 수 있습니다.")
+        # 전화번호는 숫자, +, -만 포함해야 하며, 최소 10자리 이상, 최대 15자리 이하
+        if value and not all(c.isdigit() or c in ['+', '-'] for c in value):
+            raise serializers.ValidationError("전화번호는 숫자, +, -만 포함할 수 있습니다.")
         if value and len(value) < 10:
             raise serializers.ValidationError("전화번호는 최소 10자리 이상이어야 합니다.")
         if value and len(value) > 15:
