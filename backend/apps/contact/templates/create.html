@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <title>주소록 추가</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; }
+        .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+        .btn { display:inline-block; padding:8px 12px; border-radius:8px; border:1px solid #ddd; background:#fafafa; cursor:pointer; }
+        form .row { display:flex; gap:12px; margin:8px 0; align-items:center; }
+        form label { width: 110px; color:#666; }
+        form input, form textarea, form select { flex:1; padding:8px; border:1px solid #ddd; border-radius:8px; }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+</head>
+<body>
+    <div class="wrap">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <a class="btn" href="/contact/">← 목록</a>
+        <div style="font-weight:600;">주소록 추가</div>
+        <span></span>
+        </div>
+
+        <form id="form">
+        <div class="row">
+            <label>프로필 url</label>
+            <input name="profile_url" type="url" placeholder="예: http://" />
+        </div>
+        <div class="row"><label>이름</label><input name="name" required /></div>
+        <div class="row"><label>이메일</label><input name="email" type="email" /></div>
+        <div class="row"><label>전화번호</label><input name="phone" /></div>
+        <div class="row"><label>회사</label><input name="company" /></div>
+        <div class="row"><label>직책</label><input name="position" /></div>
+        <div class="row"><label>라벨</label><div id="contact_labels"></div></div>
+        <div class="row"><label>주소</label><input name="address" /></div>
+        <div class="row"><label>생일</label><input name="birthday" type="date" /></div>
+        <div class="row"><label>웹사이트</label><input name="website" type="url" /></div>
+        <div class="row"><label>메모</label><textarea name="memo" rows="4"></textarea></div>
+
+        <div class="row" style="justify-content:flex-end;">
+            <button class="btn" type="submit">저장</button>
+        </div>
+        </form>
+    </div>
+
+  <script>
+    const API_URL = '/api/contact/';
+
+    function getCsrf() {
+        const m = document.cookie.match(/csrftoken=([^;]+)/);
+        return m ? m[1] : '';
+    }
+
+    async function load() {
+        const res = await fetch('/api/contact-label/', { headers: { 'Accept': 'application/json' }});
+        const data = await res.json();
+        renderLabels(data);
+    }
+
+    function renderLabels(c) {
+        c.forEach(l => {
+            const id = `label_${l.id}`;
+            const div = document.createElement('div');
+            div.className = 'form-check';
+            div.innerHTML = `
+                <input class="form-check-input" type="checkbox" name="labels" value="${l.id}" id="${id}">
+                <label class="form-check-label" for="${id}">${l.name}</label>
+            `;
+            document.getElementById('contact_labels').appendChild(div);
+        });
+    }
+
+    document.getElementById('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+
+        const labelsRaw = Array.from(document.getElementsByName("labels"))
+            .filter(el => el.checked)
+            .map(el => parseInt(el.value));
+
+        const labels = labelsRaw ? labelsRaw : [];
+
+        const payload = {
+            profile_url: parseInt(fd.get('profile_url'), 10),
+            name: fd.get('name'),
+            email: fd.get('email') || null,
+            phone: fd.get('phone') || null,
+            company: fd.get('company') || null,
+            position: fd.get('position') || null,
+            memo: fd.get('memo') || null,
+            labels,
+            address: fd.get('address') || null,
+            birthday: fd.get('birthday') || null,
+            website: fd.get('website') || null
+        };
+
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrf()
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.status === 201) {
+            const data = await res.json();
+            // 생성 후 상세로 이동
+            location.href = `/contact/${data.id}/`;
+        } else {
+            const err = await res.json().catch(() => ({}));
+            alert('저장 실패\n' + JSON.stringify(err));
+        }
+    });
+
+    load();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+</body>
+</html>

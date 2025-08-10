@@ -15,9 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from apps.contact.views_page import contact_list_page, contact_create_page, contact_detail_page
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
+    path('contact/', contact_list_page, name='contact_list_page'),
+    path('contact/new/', contact_create_page, name='contact_create_page'),
+    path('contact/<int:pk>/', contact_detail_page, name='contact_detail_page'),
 ]
+

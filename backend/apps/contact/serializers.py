@@ -70,6 +70,6 @@ class ContactCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
         fields = [
-            'profile_url', 'name', 'email', 'phone', 'company',
+            'id', 'profile_url', 'name', 'email', 'phone', 'company',
             'position', 'memo', 'labels', 'address', 'birthday', 'website'
         ]
