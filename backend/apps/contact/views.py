@@ -11,7 +11,7 @@ from .serializers import (
 )
 
 class ContactCursorPagination(CursorPagination):
-    page_size = 20
+    page_size = 30
     ordering = 'created_at'
     cursor_query_param = 'cursor'
     
