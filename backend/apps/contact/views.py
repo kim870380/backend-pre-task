@@ -12,7 +12,7 @@ from .serializers import (
 
 class ContactCursorPagination(CursorPagination):
     page_size = 30
-    ordering = 'created_at'
+    ordering = ['created_at', 'id']
     cursor_query_param = 'cursor'
     
 class LabelViewSet(viewsets.ModelViewSet):
